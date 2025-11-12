@@ -1,0 +1,5 @@
+#ignore obj files 
+*.o
+
+#ignore ostep-homework folder
+ostep-homework/
