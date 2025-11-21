@@ -24,21 +24,20 @@ int main(int argc, char *argv[])
         fprintf(stderr,"fork failed\n");
         exit(1);
     }else if(rc==0){
-        char child[] = "I am a child\n"; 
-        int count = write(fd,child,strlen(child));
-        if(count<0){
-            fprintf(stderr,"write to %s failed!\n",argv[1]);
-            exit(1);
-        }
+        // char child[] = "I am a child\n"; 
+        write(fd,"I ",2);
+        write(fd,"am ",3);
+        write(fd,"a ",2);
+        write(fd,"child\n",6);
+
     }else{
-        char parent[] = "I am the parent\n"; 
-        int count = write(fd,parent,strlen(parent));
-        if(count<0){
-            fprintf(stderr,"write to %s failed!\n",argv[1]);
-            exit(1);
-        }
+        //char parent[] = "I am the parent\n"; 
+        write(fd,"I ",2);
+        write(fd,"am ",3);
+        write(fd,"a ",2);
+        write(fd,"parent\n",7);
         wait(NULL);
-        int c;
+        int c,count;
         lseek(fd,0,SEEK_SET);
         while((count = read(fd,&c,1)))
             putchar(c);

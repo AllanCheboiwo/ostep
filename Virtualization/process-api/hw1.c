@@ -17,7 +17,7 @@ int main(int argc,char *argv[])
         x = 105;
 
     }else{
-        wait(NULL);
+        // wait(NULL);
         x = 110;
     }
 
