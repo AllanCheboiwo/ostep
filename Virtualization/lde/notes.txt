@@ -1,0 +1,56 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <time.h>
+#include <stdlib.h>
+
+#define ITERATIONS 10000
+
+double timespec_to_us(struct timespec *ts) {
+    return ts->tv_sec * 1e6 + ts->tv_nsec * 1e-3;
+}
+
+int main() {
+    int pipe1[2], pipe2[2];
+    struct timespec start, end;
+    char token;
+    
+    if (pipe(pipe1) < 0 || pipe(pipe2) < 0) {
+        perror("pipe");
+        exit(1);
+    }
+    
+    pid_t pid = fork();
+    
+    if (pid < 0) {
+        perror("fork");
+        exit(1);
+    }
+    
+    if (pid == 0) {  // Child process
+        for (int i = 0; i < ITERATIONS; i++) {
+            read(pipe1[0], &token, 1);  // Wait for parent
+            write(pipe2[1], &token, 1); // Signal back to parent
+        }
+        exit(0);
+    } else {         // Parent process
+        double total_time = 0;
+        
+        for (int i = 0; i < ITERATIONS; i++) {
+            clock_gettime(CLOCK_MONOTONIC, &start);
+            write(pipe1[1], &token, 1);  // Signal child
+            read(pipe2[0], &token, 1);   // Wait for child
+            clock_gettime(CLOCK_MONOTONIC, &end);
+            
+            total_time += timespec_to_us(&end) - timespec_to_us(&start);
+        }
+        
+        wait(NULL);
+        printf("Average context switch time: %.3f microseconds\n", 
+               total_time / (ITERATIONS * 2)); // Divide by 2 because we measure round trip
+        printf("Total for %d round trips: %.3f microseconds\n", 
+               ITERATIONS, total_time);
+    }
+    
+    return 0;
+}
